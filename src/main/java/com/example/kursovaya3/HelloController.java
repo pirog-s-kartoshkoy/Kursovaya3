@@ -1,11 +1,13 @@
 package com.example.kursovaya3;
 
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
-import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
-
+import javafx.stage.Stage;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.sql.Connection;
@@ -22,9 +24,10 @@ public class HelloController {
     private PasswordField passwordField;
 
     @FXML
-    protected void onLoginButtonClick() {
+    protected void onLoginButtonClick() throws ClassNotFoundException {
         String login = loginField.getText();
         String password = passwordField.getText();
+
         if (checkLoginInDatabase(login, password)) {
             openNewWindow();
         } else {
@@ -32,16 +35,14 @@ public class HelloController {
         }
     }
 
-    private boolean checkLoginInDatabase(String login, String password) {
+    private boolean checkLoginInDatabase(String login, String password) throws ClassNotFoundException {
         String url = "jdbc:mysql://localhost:3306/carrent";
         String user = "root";
-        String dbPassword = ""; // Оставь пустым "" или напиши "root" в зависимости от настроек Open Server
+        String dbPassword = "";
 
-        // Хэшируем введенный пароль алгоритмом SHA-256
         String hashedPassword = hashPasswordSHA256(password);
-
         String query = "SELECT * FROM user WHERE login = ? AND password_hash = ?";
-
+        Class.forName("com.mysql.cj.jdbc.Driver");
         try (Connection connection = DriverManager.getConnection(url, user, dbPassword);
              PreparedStatement preparedStatement = connection.prepareStatement(query)) {
 
@@ -49,8 +50,6 @@ public class HelloController {
             preparedStatement.setString(2, hashedPassword);
 
             ResultSet resultSet = preparedStatement.executeQuery();
-
-            // Если нашли пользователя с таким логином и хэшем — возвращаем true
             return resultSet.next();
 
         } catch (Exception e) {
@@ -59,7 +58,6 @@ public class HelloController {
         }
     }
 
-    //Это писал не я, нейронка постаралась
     private String hashPasswordSHA256(String password) {
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-256");
@@ -76,7 +74,22 @@ public class HelloController {
     }
 
     private void openNewWindow() {
+        try {
+            Stage currentStage = (Stage) loginField.getScene().getWindow();
+            currentStage.close();
 
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("MainMenu.fxml"));
+            Scene scene = new Scene(fxmlLoader.load(), 800, 600);
+
+            Stage newStage = new Stage();
+            newStage.setTitle("Главное меню");
+            newStage.setScene(scene);
+            newStage.show();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            showErrorAlert("Ошибка", "Не удалось загрузить главное окно приложения!");
+        }
     }
 
     private void showErrorAlert(String title, String message) {
