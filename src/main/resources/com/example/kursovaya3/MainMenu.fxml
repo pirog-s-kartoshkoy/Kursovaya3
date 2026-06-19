@@ -1,42 +1,66 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.Tab?>
-<?import javafx.scene.control.TabPane?>
-<?import javafx.scene.control.TableColumn?>
-<?import javafx.scene.control.TableView?>
-<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
 
+<AnchorPane prefHeight="700.0" prefWidth="1020.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://fxml.com/fxml/1" fx:controller="com.example.kursovaya3.MainMenuWindowControllert">
+    <children>
+        <TabPane prefHeight="700.0" prefWidth="1020.0" tabClosingPolicy="UNAVAILABLE">
+            <tabs>
 
-<AnchorPane prefHeight="693.0" prefWidth="1002.0" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.kursovaya3.MainMenuWindowControllert">
-   <children>
-      <TabPane prefHeight="693.0" prefWidth="1002.0" tabClosingPolicy="UNAVAILABLE">
-        <tabs>
-          <Tab text="Машины">
-            <content>
-              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="582.0" prefWidth="1015.0">
-                     <children>
-                        <TableView fx:id="carsTable" layoutX="7.0" layoutY="7.0" prefHeight="654.0" prefWidth="989.0">
-                          <columns>
-                            <TableColumn fx:id="modelColumn" prefWidth="149.0" text="Модель" />
-                            <TableColumn fx:id="idColumn" minWidth="0.0" prefWidth="172.0" text="id модели" />
-                              <TableColumn fx:id="regNumberColumn" prefWidth="174.0" text="рег. номер" />
-                          </columns>
-                        </TableView>
-                     </children>
-                  </AnchorPane>
-            </content>
-          </Tab>
-          <Tab text="Клиенты">
-            <content>
-              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
-            </content>
-          </Tab>
-            <Tab text="Заказы">
-              <content>
-                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
-              </content>
-            </Tab>
-        </tabs>
-      </TabPane>
-   </children>
+                <Tab text="Машины">
+                    <content>
+                        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                            <children>
+                                <TableView fx:id="carsTable" prefHeight="642.0" prefWidth="1002.0">
+                                    <columns>
+                                        <TableColumn fx:id="idColumn" prefWidth="100.0" text="ID" />
+                                        <TableColumn fx:id="modelColumn" prefWidth="300.0" text="Марка / Модель" />
+                                        <TableColumn fx:id="regNumberColumn" prefWidth="200.0" text="Госномер" />
+                                    </columns>
+                                </TableView>
+                            </children>
+                        </AnchorPane>
+                    </content>
+                </Tab>
+
+                <Tab text="Клиенты">
+                    <content>
+                        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                            <children>
+                                <TableView fx:id="clientsTable" prefHeight="642.0" prefWidth="1002.0">
+                                    <columns>
+                                        <TableColumn fx:id="clientIdColumn" prefWidth="100.0" text="id клиента" />
+                                        <TableColumn fx:id="clientNameColumn" prefWidth="350.0" text="ФИО" />
+                                        <TableColumn fx:id="clientPhoneColumn" prefWidth="200.0" text="Телефон" />
+                                        <TableColumn fx:id="clientGenderColumn" prefWidth="120.0" text="пол" />
+                                    </columns>
+                                </TableView>
+                            </children>
+                        </AnchorPane>
+                    </content>
+                </Tab>
+
+                <Tab text="Заказы">
+                    <content>
+                        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                            <children>
+                                <TableView fx:id="tripsTable" prefHeight="642.0" prefWidth="1002.0">
+                                    <columns>
+                                        <TableColumn fx:id="tripIdColumn" prefWidth="100.0" text="id поездки" />
+                                        <TableColumn fx:id="tripClientColumn" prefWidth="250.0" text="Клиент" />
+                                        <TableColumn fx:id="tripCarColumn" prefWidth="250.0" text="Машина" />
+                                        <TableColumn fx:id="tripDateColumn" prefWidth="130.0" text="дата поездки" />
+                                        <TableColumn fx:id="tripDurationColumn" prefWidth="120.0" text="длительность" />
+                                        <TableColumn fx:id="tripPriceColumn" prefWidth="130.0" text="цена" />
+                                    </columns>
+                                </TableView>
+                            </children>
+                        </AnchorPane>
+                    </content>
+                </Tab>
+
+            </tabs>
+        </TabPane>
+    </children>
 </AnchorPane>

@@ -24,20 +24,37 @@ public class MainMenuWindowControllert {
     @FXML private TableColumn<Client, Integer> clientIdColumn;
     @FXML private TableColumn<Client, String> clientNameColumn;
     @FXML private TableColumn<Client, String> clientPhoneColumn;
+    @FXML private TableColumn<Client, String> clientGenderColumn;
+
+    // --- ТАБЛИЦА ЗАКАЗОВ ---
+    @FXML private TableView<Trip> tripsTable;
+    @FXML private TableColumn<Trip, Integer> tripIdColumn;
+    @FXML private TableColumn<Trip, String> tripClientColumn;
+    @FXML private TableColumn<Trip, String> tripCarColumn;
+    @FXML private TableColumn<Trip, Integer> tripDurationColumn;
+    @FXML private TableColumn<Trip, String> tripDateColumn;
+    @FXML private TableColumn<Trip, Double> tripPriceColumn;
 
     @FXML
     public void initialize() {
-        // 1. Инициализация машин
         idColumn.setCellValueFactory(new PropertyValueFactory<>("idCar"));
         modelColumn.setCellValueFactory(new PropertyValueFactory<>("brand"));
         regNumberColumn.setCellValueFactory(new PropertyValueFactory<>("regNumber"));
         loadCarsFromDatabase();
 
-        // 2. Инициализация клиентов
-        clientIdColumn.setCellValueFactory(new PropertyValueFactory<>("idClient"));       // Ищет getIdClient()
-        clientNameColumn.setCellValueFactory(new PropertyValueFactory<>("fullName"));     // Ищет getFullName()
-        clientPhoneColumn.setCellValueFactory(new PropertyValueFactory<>("phone"));       // Ищет getPhone()
+        clientIdColumn.setCellValueFactory(new PropertyValueFactory<>("idClient"));
+        clientNameColumn.setCellValueFactory(new PropertyValueFactory<>("fullName"));
+        clientPhoneColumn.setCellValueFactory(new PropertyValueFactory<>("phone"));
+        clientGenderColumn.setCellValueFactory(new PropertyValueFactory<>("gender"));
         loadClientsFromDatabase();
+
+        tripIdColumn.setCellValueFactory(new PropertyValueFactory<>("idTrip"));
+        tripClientColumn.setCellValueFactory(new PropertyValueFactory<>("clientName"));
+        tripCarColumn.setCellValueFactory(new PropertyValueFactory<>("carBrand"));
+        tripDurationColumn.setCellValueFactory(new PropertyValueFactory<>("durationDays"));
+        tripDateColumn.setCellValueFactory(new PropertyValueFactory<>("tripDate"));
+        tripPriceColumn.setCellValueFactory(new PropertyValueFactory<>("totalPrice"));
+        loadTripsFromDatabase();
     }
 
     private void loadCarsFromDatabase() {
@@ -45,29 +62,19 @@ public class MainMenuWindowControllert {
         String url = "jdbc:mysql://localhost:3306/carrent";
         String user = "root";
         String dbPassword = "";
-
-        String query = "SELECT car.id_car, car_model.brand, car.reg_number " +
-                "FROM car " +
-                "INNER JOIN car_model ON car.id_model = car_model.id_model";
+        String query = "SELECT car.id_car, car_model.brand, car.reg_number FROM car INNER JOIN car_model ON car.id_model = car_model.id_model";
 
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
             try (Connection connection = DriverManager.getConnection(url, user, dbPassword);
                  PreparedStatement preparedStatement = connection.prepareStatement(query);
                  ResultSet resultSet = preparedStatement.executeQuery()) {
-
                 while (resultSet.next()) {
-                    int idCar = resultSet.getInt("id_car");
-                    String brand = resultSet.getString("brand");
-                    String regNumber = resultSet.getString("reg_number");
-
-                    carList.add(new Car(idCar, brand, regNumber));
+                    carList.add(new Car(resultSet.getInt("id_car"), resultSet.getString("brand"), resultSet.getString("reg_number")));
                 }
                 carsTable.setItems(carList);
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        } catch (Exception e) { e.printStackTrace(); }
     }
 
     private void loadClientsFromDatabase() {
@@ -75,27 +82,38 @@ public class MainMenuWindowControllert {
         String url = "jdbc:mysql://localhost:3306/carrent";
         String user = "root";
         String dbPassword = "";
-
-        String query = "SELECT id_client, CONCAT(last_name, ' ', first_name) AS fio, phone FROM client";
+        String query = "SELECT id_client, CONCAT(last_name, ' ', first_name) AS fio, gender, phone FROM client";
 
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
             try (Connection connection = DriverManager.getConnection(url, user, dbPassword);
                  PreparedStatement preparedStatement = connection.prepareStatement(query);
                  ResultSet resultSet = preparedStatement.executeQuery()) {
-
                 while (resultSet.next()) {
-                    int idClient = resultSet.getInt("id_client");
-                    String fullName = resultSet.getString("fio"); // Берем склеенное ФИО
-                    String phone = resultSet.getString("phone");
-
-                    clientList.add(new Client(idClient, fullName, phone));
+                    clientList.add(new Client(resultSet.getInt("id_client"), resultSet.getString("fio"), resultSet.getString("gender"), resultSet.getString("phone")));
                 }
                 clientsTable.setItems(clientList);
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (Exception e) { e.printStackTrace(); }
+    }
 
-        }
+    private void loadTripsFromDatabase() {
+        ObservableList<Trip> tripList = FXCollections.observableArrayList();
+        String url = "jdbc:mysql://localhost:3306/carrent";
+        String user = "root";
+        String dbPassword = "";
+        String query = "SELECT t.id_trip, CONCAT(cl.last_name, ' ', cl.first_name) AS client_fio, cm.brand, t.duration_days, t.trip_date, (cm.price_per_day * t.duration_days) AS total_price FROM trip t INNER JOIN client cl ON t.id_client = cl.id_client INNER JOIN car c ON t.id_car = c.id_car INNER JOIN car_model cm ON c.id_model = cm.id_model";
+
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            try (Connection connection = DriverManager.getConnection(url, user, dbPassword);
+                 PreparedStatement preparedStatement = connection.prepareStatement(query);
+                 ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    tripList.add(new Trip(resultSet.getInt("id_trip"), resultSet.getString("client_fio"), resultSet.getString("brand"), resultSet.getInt("duration_days"), resultSet.getString("trip_date"), resultSet.getDouble("total_price")));
+                }
+                tripsTable.setItems(tripList);
+            }
+        } catch (Exception e) { e.printStackTrace(); }
     }
 }
