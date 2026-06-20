@@ -3,9 +3,15 @@ package com.example.kursovaya3;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.stage.Stage;
+
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -14,26 +20,45 @@ import java.sql.ResultSet;
 public class MainMenuWindowControllert {
 
     // --- ТАБЛИЦА МАШИН ---
-    @FXML private TableView<Car> carsTable;
-    @FXML private TableColumn<Car, Integer> idColumn;
-    @FXML private TableColumn<Car, String> modelColumn;
-    @FXML private TableColumn<Car, String> regNumberColumn;
+    @FXML
+    private TableView<Car> carsTable;
+    @FXML
+    private TableColumn<Car, Integer> idColumn;
+    @FXML
+    private TableColumn<Car, String> modelColumn;
+    @FXML
+    private TableColumn<Car, String> regNumberColumn;
 
     // --- ТАБЛИЦА КЛИЕНТОВ ---
-    @FXML private TableView<Client> clientsTable;
-    @FXML private TableColumn<Client, Integer> clientIdColumn;
-    @FXML private TableColumn<Client, String> clientNameColumn;
-    @FXML private TableColumn<Client, String> clientPhoneColumn;
-    @FXML private TableColumn<Client, String> clientGenderColumn;
+    @FXML
+    private TableView<Client> clientsTable;
+    @FXML
+    private TableColumn<Client, Integer> clientIdColumn;
+    @FXML
+    private TableColumn<Client, String> clientNameColumn;
+    @FXML
+    private TableColumn<Client, String> clientPhoneColumn;
+    @FXML
+    private TableColumn<Client, String> clientGenderColumn;
 
     // --- ТАБЛИЦА ЗАКАЗОВ ---
-    @FXML private TableView<Trip> tripsTable;
-    @FXML private TableColumn<Trip, Integer> tripIdColumn;
-    @FXML private TableColumn<Trip, String> tripClientColumn;
-    @FXML private TableColumn<Trip, String> tripCarColumn;
-    @FXML private TableColumn<Trip, Integer> tripDurationColumn;
-    @FXML private TableColumn<Trip, String> tripDateColumn;
-    @FXML private TableColumn<Trip, Double> tripPriceColumn;
+    @FXML
+    private TableView<Trip> tripsTable;
+    @FXML
+    private TableColumn<Trip, Integer> tripIdColumn;
+    @FXML
+    private TableColumn<Trip, String> tripClientColumn;
+    @FXML
+    private TableColumn<Trip, String> tripCarColumn;
+    @FXML
+    private TableColumn<Trip, Integer> tripDurationColumn;
+    @FXML
+    private TableColumn<Trip, String> tripDateColumn;
+    @FXML
+    private TableColumn<Trip, Double> tripPriceColumn;
+
+    @FXML private Button carClick;
+    @FXML private Button TripClick;
 
     @FXML
     public void initialize() {
@@ -74,7 +99,9 @@ public class MainMenuWindowControllert {
                 }
                 carsTable.setItems(carList);
             }
-        } catch (Exception e) { e.printStackTrace(); }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void loadClientsFromDatabase() {
@@ -94,7 +121,9 @@ public class MainMenuWindowControllert {
                 }
                 clientsTable.setItems(clientList);
             }
-        } catch (Exception e) { e.printStackTrace(); }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void loadTripsFromDatabase() {
@@ -114,6 +143,74 @@ public class MainMenuWindowControllert {
                 }
                 tripsTable.setItems(tripList);
             }
-        } catch (Exception e) { e.printStackTrace(); }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    // Метод для безопасного получения роли из окна авторизации
+    public void setRole(String role) {
+        System.out.println("----------------------------------------");
+        System.out.println("[МЫ В ГЛАВНОМ МЕНЮ] Успешно получена роль: " + role);
+        System.out.println("----------------------------------------");
+        // ТЕСТОВЫЙ ВЫВОД: Проверяем, привязались ли кнопки к fx:id
+        System.out.println("Проверка связи с FXML:");
+        System.out.println("Кнопка машины (carClick) связана: " + (carClick != null));
+        System.out.println("Кнопка проката (tripClick) связана: " + (TripClick != null));
+
+        System.out.println("----------------------------------------");
+        System.out.println("[МЫ В ГЛАВНОМ МЕНЮ] Успешно получена роль: " + role);
+        System.out.println("----------------------------------------");
+
+
+        // Если роль НЕ admin, полностью скрываем кнопки с интерфейса
+        if (!"admin".equalsIgnoreCase(role)) {
+            if (carClick != null) {
+                carClick.setVisible(false);
+                carClick.setManaged(false); // Убирает место, которое занимала кнопка
+            }
+            if (TripClick != null) {
+                TripClick.setVisible(false);
+                TripClick.setManaged(false);
+            }
+        } else {
+            // Если зашел админ — принудительно делаем их видимыми (на всякий случай)
+            if (carClick != null) {
+                carClick.setVisible(true);
+                carClick.setManaged(true);
+            }
+            if (TripClick != null) {
+                TripClick.setVisible(true);
+                TripClick.setManaged(true);
+            }
+        }
+    }
+    @FXML
+    private void onAddCarClick() {
+        try {
+            // Указываем твое новое имя файла — просто AddCar.fxml
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("AddCar.fxml"));
+            Scene scene = new Scene(fxmlLoader.load(), 400, 300);
+
+            Stage dialogStage = new Stage();
+            dialogStage.setTitle("Новый автомобиль");
+
+            // Делаем окно модальным
+            dialogStage.initModality(javafx.stage.Modality.WINDOW_MODAL);
+            dialogStage.initOwner(carClick.getScene().getWindow());
+
+            dialogStage.setScene(scene);
+            dialogStage.showAndWait(); // Ждем закрытия
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.err.println("Не удалось найти или открыть файл AddCar.fxml!");
+        }
+    }
+
+    // Этот метод мы добавили на прошлом шаге (для проката)
+    @FXML
+    private void TripClick() {
+        System.out.println("Сработало onAction: Нажата кнопка добавления проката!");
     }
 }

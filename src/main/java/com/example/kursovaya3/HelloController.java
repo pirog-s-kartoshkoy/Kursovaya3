@@ -28,20 +28,22 @@ public class HelloController {
         String login = loginField.getText();
         String password = passwordField.getText();
 
-        if (checkLoginInDatabase(login, password)) {
-            openNewWindow();
+        String userRole = checkLoginInDatabase(login, password);
+
+        if (userRole != null) {
+            openNewWindow(userRole); // Передаем полученную роль дальше
         } else {
             showErrorAlert("Ошибка", "Неверный логин или пароль!");
         }
     }
 
-    private boolean checkLoginInDatabase(String login, String password) throws ClassNotFoundException {
+    private String checkLoginInDatabase(String login, String password) throws ClassNotFoundException {
         String url = "jdbc:mysql://localhost:3306/carrent";
         String user = "root";
         String dbPassword = "";
 
         String hashedPassword = hashPasswordSHA256(password);
-        String query = "SELECT * FROM user WHERE login = ? AND password_hash = ?";
+        String query = "SELECT role FROM user WHERE login = ? AND password_hash = ?";
         Class.forName("com.mysql.cj.jdbc.Driver");
         try (Connection connection = DriverManager.getConnection(url, user, dbPassword);
              PreparedStatement preparedStatement = connection.prepareStatement(query)) {
@@ -49,12 +51,15 @@ public class HelloController {
             preparedStatement.setString(1, login);
             preparedStatement.setString(2, hashedPassword);
 
-            ResultSet resultSet = preparedStatement.executeQuery();
-            return resultSet.next();
-
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    return resultSet.getString("role"); // Возвращаем роль из БД
+                }
+            }
+            return null;
         } catch (Exception e) {
             e.printStackTrace();
-            return false;
+            return null;
         }
     }
 
@@ -73,13 +78,19 @@ public class HelloController {
         }
     }
 
-    private void openNewWindow() {
+    private void openNewWindow(String role) {
         try {
             Stage currentStage = (Stage) loginField.getScene().getWindow();
             currentStage.close();
 
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("MainMenu.fxml"));
-            Scene scene = new Scene(fxmlLoader.load(), 800, 600);
+            Scene scene = new Scene(fxmlLoader.load(), 1000, 600);
+
+            // Получаем контроллер СТРОГО после fxmlLoader.load()
+            MainMenuWindowControllert mainMenuController = fxmlLoader.getController();
+            if (mainMenuController != null) {
+                mainMenuController.setRole(role); // Вызываем наш тестовый метод
+            }
 
             Stage newStage = new Stage();
             newStage.setTitle("Главное меню");

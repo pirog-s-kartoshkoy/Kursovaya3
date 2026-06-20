@@ -1,9 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.AnchorPane?>
 
-<AnchorPane prefHeight="700.0" prefWidth="1020.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://fxml.com/fxml/1" fx:controller="com.example.kursovaya3.MainMenuWindowControllert">
+<AnchorPane prefHeight="700.0" prefWidth="1020.0" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.kursovaya3.MainMenuWindowControllert">
     <children>
         <TabPane prefHeight="700.0" prefWidth="1020.0" tabClosingPolicy="UNAVAILABLE">
             <tabs>
@@ -19,6 +23,7 @@
                                         <TableColumn fx:id="regNumberColumn" prefWidth="200.0" text="Госномер" />
                                     </columns>
                                 </TableView>
+                        <Button fx:id="carClick" layoutX="8.0" layoutY="645.0" mnemonicParsing="false" onAction="#onAddCarClick" prefHeight="25.0" prefWidth="78.0" text="Добавить" />
                             </children>
                         </AnchorPane>
                     </content>
@@ -55,6 +60,7 @@
                                         <TableColumn fx:id="tripPriceColumn" prefWidth="130.0" text="цена" />
                                     </columns>
                                 </TableView>
+                        <Button fx:id="onAddTripClick" layoutX="8.0" layoutY="645.0" mnemonicParsing="false" onAction="#TripClick" prefHeight="25.0" prefWidth="75.0" text="Добавить" />
                             </children>
                         </AnchorPane>
                     </content>
