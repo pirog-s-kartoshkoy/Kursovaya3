@@ -109,4 +109,26 @@ public class HelloController {
         alert.setContentText(message);
         alert.showAndWait();
     }
+
+    @FXML
+    private void onOpenRegisterClick(javafx.event.ActionEvent event) {
+        try {
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("Register.fxml"));
+            Scene scene = new Scene(fxmlLoader.load(), 400, 350);
+
+            Stage stage = new Stage();
+            stage.setTitle("Регистрация");
+            stage.initModality(javafx.stage.Modality.APPLICATION_MODAL);
+
+            javafx.scene.Node source = (javafx.scene.Node) event.getSource();
+            stage.initOwner(source.getScene().getWindow());
+
+            stage.setScene(scene);
+            stage.showAndWait();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.err.println("Не удалось открыть окно регистрации!");
+        }
+    }
 }

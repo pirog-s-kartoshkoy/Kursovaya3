@@ -27,8 +27,8 @@
    </HBox>
    <HBox prefHeight="29.0" prefWidth="289.0" spacing="150.0">
       <children>
-         <Button alignment="CENTER" contentDisplay="BOTTOM" mnemonicParsing="false" onAction="#onLoginButtonClick" prefHeight="29.0" prefWidth="71.0" text="Вход" />
-         <Button mnemonicParsing="false" prefHeight="30.0" prefWidth="113.0" text="Регистрация" />
+         <Button alignment="CENTER" contentDisplay="BOTTOM" mnemonicParsing="false" onAction="#onLoginButtonClick" prefHeight="29.0" prefWidth="75.0" text="Вход" />
+         <Button mnemonicParsing="false" onAction="#onOpenRegisterClick" prefHeight="29.0" prefWidth="55.0" text="Рег." />
       </children>
    </HBox>
 </VBox>

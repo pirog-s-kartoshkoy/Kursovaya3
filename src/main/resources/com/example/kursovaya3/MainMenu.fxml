@@ -24,6 +24,7 @@
                                     </columns>
                                 </TableView>
                         <Button fx:id="carClick" layoutX="8.0" layoutY="645.0" mnemonicParsing="false" onAction="#onAddCarClick" prefHeight="25.0" prefWidth="78.0" text="Добавить" />
+                        <Button layoutX="903.0" layoutY="645.0" mnemonicParsing="false" onAction="#onDeleteCarClick" prefHeight="25.0" prefWidth="103.0" text="Удалить" />
                             </children>
                         </AnchorPane>
                     </content>
@@ -61,6 +62,8 @@
                                     </columns>
                                 </TableView>
                         <Button fx:id="onAddTripClick" layoutX="8.0" layoutY="645.0" mnemonicParsing="false" onAction="#TripClick" prefHeight="25.0" prefWidth="75.0" text="Добавить" />
+                        <Button layoutX="884.0" layoutY="645.0" mnemonicParsing="false" onAction="#onDeleteTripClick" prefHeight="25.0" prefWidth="118.0" text="Удалить" />
+                        <Button layoutX="710.0" layoutY="645.0" mnemonicParsing="false" onAction="#onAddFineClick" prefHeight="25.0" prefWidth="155.0" text="Начислить штраф" />
                             </children>
                         </AnchorPane>
                     </content>

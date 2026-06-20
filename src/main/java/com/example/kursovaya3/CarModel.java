@@ -15,7 +15,6 @@ public class CarModel {
     public String getBrand() { return brand; }
     public double getPricePerDay() { return pricePerDay; }
 
-    // Этот метод определяет, что именно увидит пользователь в выпадающем списке
     @Override
     public String toString() {
         return brand + " (" + pricePerDay + " руб/сут)";

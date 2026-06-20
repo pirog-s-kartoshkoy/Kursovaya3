@@ -14,18 +14,16 @@ import java.sql.ResultSet;
 public class AddCarController {
 
     @FXML
-    private ComboBox<CarModel> modelComboBox; // Наш раскрывающийся список
+    private ComboBox<CarModel> modelComboBox;
 
     @FXML
     private TextField numberField;
 
-    // Метод initialize вызывается автоматически при загрузке FXML
     @FXML
     public void initialize() {
         loadCarModels();
     }
 
-    // Загружаем модели из БД в ComboBox
     private void loadCarModels() {
         String url = "jdbc:mysql://localhost:3306/carrent";
         String user = "root";
@@ -58,7 +56,6 @@ public class AddCarController {
         CarModel selectedModel = modelComboBox.getValue();
         String number = numberField.getText();
 
-        // Небольшая валидация на пустые поля
         if (selectedModel == null || number.trim().isEmpty()) {
             System.out.println("Заполните все поля!");
             return;
@@ -68,7 +65,6 @@ public class AddCarController {
         String user = "root";
         String dbPassword = "";
 
-        // SQL-запрос на добавление записи в таблицу car
         String query = "INSERT INTO car (id_model, reg_number) VALUES (?, ?)";
 
         try (Connection connection = DriverManager.getConnection(url, user, dbPassword);
@@ -82,7 +78,6 @@ public class AddCarController {
                 System.out.println("Успешно добавлено в БД! Машина: " + selectedModel.getBrand() + " [" + number + "]");
             }
 
-            // Закрываем модальное окно после сохранения
             Stage stage = (Stage) numberField.getScene().getWindow();
             stage.close();
 

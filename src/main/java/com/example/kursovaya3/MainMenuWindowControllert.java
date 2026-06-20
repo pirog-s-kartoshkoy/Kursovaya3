@@ -19,7 +19,6 @@ import java.sql.ResultSet;
 
 public class MainMenuWindowControllert {
 
-    // --- ТАБЛИЦА МАШИН ---
     @FXML
     private TableView<Car> carsTable;
     @FXML
@@ -29,7 +28,6 @@ public class MainMenuWindowControllert {
     @FXML
     private TableColumn<Car, String> regNumberColumn;
 
-    // --- ТАБЛИЦА КЛИЕНТОВ ---
     @FXML
     private TableView<Client> clientsTable;
     @FXML
@@ -41,7 +39,6 @@ public class MainMenuWindowControllert {
     @FXML
     private TableColumn<Client, String> clientGenderColumn;
 
-    // --- ТАБЛИЦА ЗАКАЗОВ ---
     @FXML
     private TableView<Trip> tripsTable;
     @FXML
@@ -57,7 +54,6 @@ public class MainMenuWindowControllert {
     @FXML
     private TableColumn<Trip, Double> tripPriceColumn;
 
-    // Обе кнопки приведены к точному регистру их fx:id в Scene Builder
     @FXML private Button carClick;
     @FXML private Button TripClick;
 
@@ -132,7 +128,17 @@ public class MainMenuWindowControllert {
         String url = "jdbc:mysql://localhost:3306/carrent";
         String user = "root";
         String dbPassword = "";
-        String query = "SELECT t.id_trip, CONCAT(cl.last_name, ' ', cl.first_name) AS client_fio, cm.brand, t.duration_days, t.trip_date, (cm.price_per_day * t.duration_days) AS total_price FROM trip t INNER JOIN client cl ON t.id_client = cl.id_client INNER JOIN car c ON t.id_car = c.id_car INNER JOIN car_model cm ON c.id_model = cm.id_model";
+
+        String query = "SELECT t.id_trip, " +
+                "CONCAT(cl.last_name, ' ', cl.first_name) AS client_fio, " +
+                "cm.brand, " +
+                "t.duration_days, " +
+                "t.trip_date, " +
+                "((cm.price_per_day * t.duration_days) + IFNULL((SELECT SUM(ft.cost) FROM fine f INNER JOIN fine_type ft ON f.id_fine_type = ft.id_fine_type WHERE f.id_trip = t.id_trip), 0)) AS total_price " +
+                "FROM trip t " +
+                "INNER JOIN client cl ON t.id_client = cl.id_client " +
+                "INNER JOIN car c ON t.id_car = c.id_car " +
+                "INNER JOIN car_model cm ON c.id_model = cm.id_model";
 
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
@@ -140,7 +146,14 @@ public class MainMenuWindowControllert {
                  PreparedStatement preparedStatement = connection.prepareStatement(query);
                  ResultSet resultSet = preparedStatement.executeQuery()) {
                 while (resultSet.next()) {
-                    tripList.add(new Trip(resultSet.getInt("id_trip"), resultSet.getString("client_fio"), resultSet.getString("brand"), resultSet.getInt("duration_days"), resultSet.getString("trip_date"), resultSet.getDouble("total_price")));
+                    tripList.add(new Trip(
+                            resultSet.getInt("id_trip"),
+                            resultSet.getString("client_fio"),
+                            resultSet.getString("brand"),
+                            resultSet.getInt("duration_days"),
+                            resultSet.getString("trip_date"),
+                            resultSet.getDouble("total_price")
+                    ));
                 }
                 tripsTable.setItems(tripList);
             }
@@ -207,14 +220,12 @@ public class MainMenuWindowControllert {
             dialogStage.setTitle("Оформить прокат");
             dialogStage.initModality(javafx.stage.Modality.WINDOW_MODAL);
 
-            // ВМЕСТО кнопки берем окно прямо из события клика (работает всегда на 100%)
             javafx.scene.Node source = (javafx.scene.Node) event.getSource();
             dialogStage.initOwner(source.getScene().getWindow());
 
             dialogStage.setScene(scene);
             dialogStage.showAndWait();
 
-            System.out.println("Окно проката закрылось, обновляем список заказов...");
             loadTripsFromDatabase();
 
         } catch (IOException e) {
@@ -225,7 +236,6 @@ public class MainMenuWindowControllert {
 
     @FXML
     private void onDeleteCarClick() {
-        // Получаем выбранную в таблице машину
         Car selectedCar = carsTable.getSelectionModel().getSelectedItem();
 
         if (selectedCar == null) {
@@ -237,7 +247,6 @@ public class MainMenuWindowControllert {
         String user = "root";
         String dbPassword = "";
 
-        // SQL-запрос на удаление по id_car
         String query = "DELETE FROM car WHERE id_car = ?";
 
         try (Connection connection = DriverManager.getConnection(url, user, dbPassword);
@@ -258,7 +267,6 @@ public class MainMenuWindowControllert {
 
     @FXML
     private void onDeleteTripClick() {
-        // Получаем выбранный прокат
         Trip selectedTrip = tripsTable.getSelectionModel().getSelectedItem();
 
         if (selectedTrip == null) {
@@ -270,7 +278,6 @@ public class MainMenuWindowControllert {
         String user = "root";
         String dbPassword = "";
 
-        // SQL-запрос на удаление по id_trip
         String query = "DELETE FROM trip WHERE id_trip = ?";
 
         try (Connection connection = DriverManager.getConnection(url, user, dbPassword);
@@ -286,5 +293,38 @@ public class MainMenuWindowControllert {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    @FXML
+    private void onAddFineClick(javafx.event.ActionEvent event) {
+        Trip selectedTrip = tripsTable.getSelectionModel().getSelectedItem();
+
+        try {
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("AddFine.fxml"));
+            Scene scene = new Scene(fxmlLoader.load(), 400, 250);
+
+            AddFineController fineController = fxmlLoader.getController();
+            fineController.setTripData(
+                    selectedTrip.getIdTrip(),
+                    selectedTrip.getClientName(),
+                    selectedTrip.getCarBrand()
+            );
+
+            Stage dialogStage = new Stage();
+            dialogStage.setTitle("Начислить штраф");
+            dialogStage.initModality(javafx.stage.Modality.WINDOW_MODAL);
+
+            javafx.scene.Node source = (javafx.scene.Node) event.getSource();
+            dialogStage.initOwner(source.getScene().getWindow());
+
+            dialogStage.setScene(scene);
+            dialogStage.showAndWait();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.err.println("Не удалось открыть окно начисления штрафов AddFine.fxml!");
+        }
+
+        loadTripsFromDatabase();
     }
 }

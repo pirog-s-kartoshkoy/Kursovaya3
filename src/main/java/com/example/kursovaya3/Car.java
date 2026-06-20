@@ -2,7 +2,7 @@ package com.example.kursovaya3;
 
 public class Car {
     private int idCar;
-    private String brand; // Сюда будет приходить название (например, "Toyota Camry")
+    private String brand;
     private String regNumber;
 
     public Car(int idCar, String brand, String regNumber) {

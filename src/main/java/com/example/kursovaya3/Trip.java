@@ -6,7 +6,7 @@ public class Trip {
     private String carBrand;
     private int durationDays;
     private String tripDate;
-    private double totalPrice; // Новое поле для общей стоимости
+    private double totalPrice;
 
     public Trip(int idTrip, String clientName, String carBrand, int durationDays, String tripDate, double totalPrice) {
         this.idTrip = idTrip;
