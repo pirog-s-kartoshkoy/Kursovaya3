@@ -222,4 +222,69 @@ public class MainMenuWindowControllert {
             System.err.println("Не удалось найти или открыть файл AddTrip.fxml!");
         }
     }
+
+    @FXML
+    private void onDeleteCarClick() {
+        // Получаем выбранную в таблице машину
+        Car selectedCar = carsTable.getSelectionModel().getSelectedItem();
+
+        if (selectedCar == null) {
+            System.out.println("Ошибка: Сначала выберите машину в таблице для удаления!");
+            return;
+        }
+
+        String url = "jdbc:mysql://localhost:3306/carrent";
+        String user = "root";
+        String dbPassword = "";
+
+        // SQL-запрос на удаление по id_car
+        String query = "DELETE FROM car WHERE id_car = ?";
+
+        try (Connection connection = DriverManager.getConnection(url, user, dbPassword);
+             PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+
+            preparedStatement.setInt(1, selectedCar.getIdCar()); // Вытаскиваем ID машины
+
+            int rowsDeleted = preparedStatement.executeUpdate();
+            if (rowsDeleted > 0) {
+                loadCarsFromDatabase();
+            }
+
+        } catch (java.sql.SQLIntegrityConstraintViolationException e) {
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
+    private void onDeleteTripClick() {
+        // Получаем выбранный прокат
+        Trip selectedTrip = tripsTable.getSelectionModel().getSelectedItem();
+
+        if (selectedTrip == null) {
+            System.out.println("Ошибка: Сначала выберите прокат в таблице для удаления!");
+            return;
+        }
+
+        String url = "jdbc:mysql://localhost:3306/carrent";
+        String user = "root";
+        String dbPassword = "";
+
+        // SQL-запрос на удаление по id_trip
+        String query = "DELETE FROM trip WHERE id_trip = ?";
+
+        try (Connection connection = DriverManager.getConnection(url, user, dbPassword);
+             PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+
+            preparedStatement.setInt(1, selectedTrip.getIdTrip());
+
+            int rowsDeleted = preparedStatement.executeUpdate();
+            if (rowsDeleted > 0) {
+                loadTripsFromDatabase();
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }
