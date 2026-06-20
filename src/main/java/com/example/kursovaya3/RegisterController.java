@@ -31,9 +31,10 @@ public class RegisterController {
     public void initialize() {
         genderComboBox.setItems(FXCollections.observableArrayList("Мужской", "Женский"));
     }
-    private void showErrorAlert(String title, String message) {
+
+    private void showErrorAlert(String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle(title);
+        alert.setTitle("Ошибка");
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
@@ -48,15 +49,27 @@ public class RegisterController {
         String gender = genderComboBox.getValue();
 
         if (login.isEmpty() || password.isEmpty() || confirmPassword.isEmpty() || phone.isEmpty() || gender == null) {
-            showErrorAlert("Ошибка", "Ошибка: Заполните все поля и выберите пол!");
+            showErrorAlert("Ошибка: Заполните все поля!");
+            return;
+        }
+
+        // --- ПРОВЕРКА ПАРОЛЯ ПО REGEX ---
+        // Пароль должен быть от 6 символов, содержать минимум 1 цифру и 1 заглавную букву
+        String passwordRegex = "^(?=.*[0-9])(?=.*[A-Z]).{6,}$";
+        if (!password.matches(passwordRegex)) {
+            showErrorAlert("Ошибка: Пароль слишком простой! Требуется: не менее 6 символов, минимум одна цифра и одна заглавная буква.");
+            return;
+        }
+
+        if (!password.equals(confirmPassword)) {
+            showErrorAlert("Ошибка: Пароли не совпадают!");
             return;
         }
 
         if (isLoginExists(login)) {
-            showErrorAlert("Ошибка", "Ошибка: Пользователь с таким логином уже существует!");
+            showErrorAlert("Ошибка: Логин занят!");
         } else {
-            String hashedPassword = hashPasswordSHA256(password);
-            registerNewUserWithClient(login, hashedPassword, phone, gender);
+            registerNewUserWithClient(login, hashPasswordSHA256(password), phone, gender);
         }
     }
 
@@ -102,7 +115,7 @@ public class RegisterController {
             }
 
             if (generatedClientId == -1) {
-                showErrorAlert("Ошибка", "Не удалось получить сгенерированный ID клиента.");
+                showErrorAlert("Не удалось получить сгенерированный ID клиента.");
                 throw new Exception("Не удалось получить сгенерированный ID клиента.");
             }
 
@@ -123,7 +136,7 @@ public class RegisterController {
                 try { connection.rollback(); } catch (Exception ex) { ex.printStackTrace(); }
             }
             e.printStackTrace();
-            showErrorAlert("Ошибка", "Ошибка при комплексной регистрации пользователя.");
+            showErrorAlert("Ошибка при комплексной регистрации пользователя.");
         } finally {
             if (connection != null) {
                 try { connection.close(); } catch (Exception ex) { ex.printStackTrace(); }

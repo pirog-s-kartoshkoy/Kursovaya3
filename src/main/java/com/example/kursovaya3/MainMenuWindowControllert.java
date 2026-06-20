@@ -301,8 +301,38 @@ public class MainMenuWindowControllert {
     }
 
     @FXML
+    private void onOpenChangeAuthClick(javafx.event.ActionEvent event) {
+        try {
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("ChangeAuth.fxml"));
+            javafx.scene.Scene scene = new Scene(fxmlLoader.load(), 350, 300);
+
+            ChangeAuthController controller = fxmlLoader.getController();
+
+            int currentId = UserSession.getUserId();
+            System.out.println("MainMenu передает в ChangeAuth настоящий id_user = " + currentId);
+
+            controller.setUserId(currentId);
+
+            Stage stage = new Stage();
+            stage.setTitle("Настройки");
+            stage.initModality(javafx.stage.Modality.APPLICATION_MODAL);
+            javafx.scene.Node source = (javafx.scene.Node) event.getSource();
+            stage.initOwner(source.getScene().getWindow());
+            stage.setScene(scene);
+            stage.showAndWait();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    @FXML
     private void onAddFineClick(javafx.event.ActionEvent event) {
         Trip selectedTrip = tripsTable.getSelectionModel().getSelectedItem();
+
+        // Защита от клика по пустой строке
+        if (selectedTrip == null) {
+            showErrorAlert("Ошибка", "Сначала выберите прокат в таблице для начисления штрафа!");
+            return;
+        }
 
         try {
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("AddFine.fxml"));
@@ -326,9 +356,8 @@ public class MainMenuWindowControllert {
             dialogStage.showAndWait();
 
         } catch (IOException e) {
-            showErrorAlert("Ошибка", "Выберите тип штрафа для начиления");
+            showErrorAlert("Ошибка", "Не удалось открыть окно начисления штрафа");
             e.printStackTrace();
-
         }
 
         loadTripsFromDatabase();

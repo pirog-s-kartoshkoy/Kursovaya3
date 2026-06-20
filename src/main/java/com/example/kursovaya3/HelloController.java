@@ -25,9 +25,13 @@ public class HelloController {
 
     @FXML
     protected void onLoginButtonClick() throws ClassNotFoundException {
-        String login = loginField.getText();
-        String password = passwordField.getText();
+        String login = loginField.getText().trim();
+        String password = passwordField.getText().trim();
 
+        if (login.isEmpty() || password.isEmpty()) {
+            showErrorAlert("Ошибка", "Заполните все поля!");
+            return;
+        }
         String userRole = checkLoginInDatabase(login, password);
 
         if (userRole != null) {
@@ -43,7 +47,10 @@ public class HelloController {
         String dbPassword = "";
 
         String hashedPassword = hashPasswordSHA256(password);
-        String query = "SELECT role FROM user WHERE login = ? AND password_hash = ?";
+
+        // КРИТИЧЕСКОЕ ИЗМЕНЕНИЕ: Добавили id_user в выборку SELECT
+        String query = "SELECT id_user, role FROM user WHERE login = ? AND password_hash = ?";
+
         Class.forName("com.mysql.cj.jdbc.Driver");
         try (Connection connection = DriverManager.getConnection(url, user, dbPassword);
              PreparedStatement preparedStatement = connection.prepareStatement(query)) {
@@ -53,7 +60,13 @@ public class HelloController {
 
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 if (resultSet.next()) {
-                    return resultSet.getString("role");
+                    int idFromDb = resultSet.getInt("id_user");
+                    String roleFromDb = resultSet.getString("role");
+
+                    // Записываем данные в глобальную сессию
+                    UserSession.startSession(idFromDb, login);
+
+                    return roleFromDb;
                 }
             }
             return null;
@@ -88,7 +101,7 @@ public class HelloController {
 
             MainMenuWindowControllert mainMenuController = fxmlLoader.getController();
             if (mainMenuController != null) {
-                mainMenuController.setRole(role); // Вызываем наш тестовый метод
+                mainMenuController.setRole(role);
             }
 
             Stage newStage = new Stage();
@@ -128,7 +141,7 @@ public class HelloController {
 
         } catch (IOException e) {
             e.printStackTrace();
-            System.err.println("Не удалось открыть окно регистрации!");
+            showErrorAlert("Ошибка", "Не удалось открыть окно регистрации!");
         }
     }
 }

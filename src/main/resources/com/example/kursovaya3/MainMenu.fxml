@@ -42,6 +42,7 @@
                                         <TableColumn fx:id="clientGenderColumn" prefWidth="120.0" text="пол" />
                                     </columns>
                                 </TableView>
+                        <Button layoutX="8.0" layoutY="645.0" mnemonicParsing="false" onAction="#onOpenChangeAuthClick" prefHeight="25.0" prefWidth="233.0" text="Изменить свои данные" />
                             </children>
                         </AnchorPane>
                     </content>
