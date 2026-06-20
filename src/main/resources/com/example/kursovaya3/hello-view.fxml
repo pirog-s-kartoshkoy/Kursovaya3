@@ -7,12 +7,16 @@
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
 
 <VBox alignment="CENTER" prefHeight="374.0" prefWidth="329.0" spacing="20.0" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.kursovaya3.HelloController">
     <padding>
         <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
     </padding>
-   <Label prefHeight="37.0" prefWidth="250.0" text="Привет! Войди или зарегестрируйся" textAlignment="CENTER" />
+   <Label prefHeight="98.0" prefWidth="250.0" text="Вход или регистрация" textAlignment="CENTER">
+      <font>
+         <Font name="SansSerif Italic" size="22.0" />
+      </font></Label>
 
     <Label fx:id="welcomeText" />
    <HBox prefHeight="35.0" prefWidth="289.0">
@@ -27,8 +31,8 @@
    </HBox>
    <HBox prefHeight="29.0" prefWidth="289.0" spacing="150.0">
       <children>
-         <Button alignment="CENTER" contentDisplay="BOTTOM" mnemonicParsing="false" onAction="#onLoginButtonClick" prefHeight="29.0" prefWidth="75.0" text="Вход" />
-         <Button mnemonicParsing="false" onAction="#onOpenRegisterClick" prefHeight="29.0" prefWidth="55.0" text="Рег." />
+         <Button alignment="CENTER" contentDisplay="BOTTOM" mnemonicParsing="false" onAction="#onLoginButtonClick" prefHeight="29.0" prefWidth="71.0" text="Вход" />
+         <Button mnemonicParsing="false" onAction="#onOpenRegisterClick" prefHeight="30.0" prefWidth="113.0" text="Регистрация" />
       </children>
    </HBox>
 </VBox>

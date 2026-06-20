@@ -5,6 +5,7 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -77,6 +78,13 @@ public class MainMenuWindowControllert {
         tripDateColumn.setCellValueFactory(new PropertyValueFactory<>("tripDate"));
         tripPriceColumn.setCellValueFactory(new PropertyValueFactory<>("totalPrice"));
         loadTripsFromDatabase();
+    }
+    private void showErrorAlert(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
     }
 
     private void loadCarsFromDatabase() {
@@ -200,13 +208,10 @@ public class MainMenuWindowControllert {
 
             dialogStage.setScene(scene);
             dialogStage.showAndWait();
-
-            System.out.println("Окно добавления закрылось, обновляем список машин на экране...");
             loadCarsFromDatabase();
 
         } catch (IOException e) {
             e.printStackTrace();
-            System.err.println("Не удалось найти или открыть файл AddCar.fxml!");
         }
     }
 
@@ -230,7 +235,7 @@ public class MainMenuWindowControllert {
 
         } catch (IOException e) {
             e.printStackTrace();
-            System.err.println("Не удалось найти или открыть файл AddTrip.fxml!");
+            showErrorAlert("Ошибка", "Не удалось найти или открыть файл AddTrip.fxml!");
         }
     }
 
@@ -239,7 +244,7 @@ public class MainMenuWindowControllert {
         Car selectedCar = carsTable.getSelectionModel().getSelectedItem();
 
         if (selectedCar == null) {
-            System.out.println("Ошибка: Сначала выберите машину в таблице для удаления!");
+            showErrorAlert("Ошибка", "Ошибка: Сначала выберите машину в таблице для удаления!");
             return;
         }
 
@@ -270,7 +275,7 @@ public class MainMenuWindowControllert {
         Trip selectedTrip = tripsTable.getSelectionModel().getSelectedItem();
 
         if (selectedTrip == null) {
-            System.out.println("Ошибка: Сначала выберите прокат в таблице для удаления!");
+            showErrorAlert("Ошибка", "Ошибка: Сначала выберите прокат в таблице для удаления!");
             return;
         }
 
@@ -321,8 +326,9 @@ public class MainMenuWindowControllert {
             dialogStage.showAndWait();
 
         } catch (IOException e) {
+            showErrorAlert("Ошибка", "Выберите тип штрафа для начиления");
             e.printStackTrace();
-            System.err.println("Не удалось открыть окно начисления штрафов AddFine.fxml!");
+
         }
 
         loadTripsFromDatabase();

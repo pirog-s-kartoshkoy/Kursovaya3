@@ -31,7 +31,7 @@ public class HelloController {
         String userRole = checkLoginInDatabase(login, password);
 
         if (userRole != null) {
-            openNewWindow(userRole); // Передаем полученную роль дальше
+            openNewWindow(userRole);
         } else {
             showErrorAlert("Ошибка", "Неверный логин или пароль!");
         }

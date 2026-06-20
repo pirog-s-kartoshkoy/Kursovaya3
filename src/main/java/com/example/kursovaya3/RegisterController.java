@@ -2,6 +2,7 @@ package com.example.kursovaya3;
 
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
@@ -30,6 +31,13 @@ public class RegisterController {
     public void initialize() {
         genderComboBox.setItems(FXCollections.observableArrayList("Мужской", "Женский"));
     }
+    private void showErrorAlert(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
 
     @FXML
     private void onRegisterClick() {
@@ -40,17 +48,12 @@ public class RegisterController {
         String gender = genderComboBox.getValue();
 
         if (login.isEmpty() || password.isEmpty() || confirmPassword.isEmpty() || phone.isEmpty() || gender == null) {
-            System.out.println("Ошибка: Заполните все поля и выберите пол!");
-            return;
-        }
-
-        if (!password.equals(confirmPassword)) {
-            System.out.println("Ошибка: Пароли не совпадают!");
+            showErrorAlert("Ошибка", "Ошибка: Заполните все поля и выберите пол!");
             return;
         }
 
         if (isLoginExists(login)) {
-            System.out.println("Ошибка: Пользователь с таким логином уже существует!");
+            showErrorAlert("Ошибка", "Ошибка: Пользователь с таким логином уже существует!");
         } else {
             String hashedPassword = hashPasswordSHA256(password);
             registerNewUserWithClient(login, hashedPassword, phone, gender);
@@ -99,6 +102,7 @@ public class RegisterController {
             }
 
             if (generatedClientId == -1) {
+                showErrorAlert("Ошибка", "Не удалось получить сгенерированный ID клиента.");
                 throw new Exception("Не удалось получить сгенерированный ID клиента.");
             }
 
@@ -119,7 +123,7 @@ public class RegisterController {
                 try { connection.rollback(); } catch (Exception ex) { ex.printStackTrace(); }
             }
             e.printStackTrace();
-            System.err.println("Ошибка при комплексной регистрации пользователя.");
+            showErrorAlert("Ошибка", "Ошибка при комплексной регистрации пользователя.");
         } finally {
             if (connection != null) {
                 try { connection.close(); } catch (Exception ex) { ex.printStackTrace(); }

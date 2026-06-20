@@ -3,6 +3,7 @@ package com.example.kursovaya3;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.stage.Stage;
@@ -23,8 +24,15 @@ public class AddFineController {
 
     public void setTripData(int idTrip, String clientName, String carBrand) {
         this.currentTripId = idTrip;
-        tripInfoLabel.setText("Заказ №" + idTrip + " | Клиент: " + clientName + "\nАвто: " + carBrand);
+        tripInfoLabel.setText("Начисление штрафа");
         loadFineTypes();
+    }
+    private void showErrorAlert(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
     }
 
     private void loadFineTypes() {
@@ -46,7 +54,7 @@ public class AddFineController {
 
         } catch (Exception e) {
             e.printStackTrace();
-            System.err.println("Ошибка загрузки типов штрафов!");
+            showErrorAlert("Критическая ошибка", "Ошибка загрузки типов штрафов!");
         }
     }
 
@@ -55,7 +63,7 @@ public class AddFineController {
         FineType selectedType = fineTypeComboBox.getValue();
 
         if (selectedType == null) {
-            System.out.println("Ошибка: Выберите тип штрафа из списка!");
+            showErrorAlert("Ошибка", "Ошибка: Выберите тип штрафа из списка!");
             return;
         }
 
@@ -71,7 +79,7 @@ public class AddFineController {
 
                 try (ResultSet rs = checkStmt.executeQuery()) {
                     if (rs.next() && rs.getInt(1) > 0) {
-                        System.out.println("Ошибка: Этот штраф уже выписан для данного заказа!");
+                        showErrorAlert("Ошибка", "Ошибка: Этот штраф уже выписан!");;
                         connection.rollback();
                         return;
                     }
@@ -94,7 +102,7 @@ public class AddFineController {
                 try { connection.rollback(); } catch (Exception ex) { ex.printStackTrace(); }
             }
             e.printStackTrace();
-            System.err.println("Ошибка при начислении штрафа.");
+            showErrorAlert("Ошибка", "Ошибка при начислении штрафа!");;
         } finally {
             if (connection != null) {
                 try { connection.close(); } catch (Exception ex) { ex.printStackTrace(); }

@@ -3,6 +3,7 @@ package com.example.kursovaya3;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
@@ -23,7 +24,13 @@ public class AddCarController {
     public void initialize() {
         loadCarModels();
     }
-
+    private void showErrorAlert(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
     private void loadCarModels() {
         String url = "jdbc:mysql://localhost:3306/carrent";
         String user = "root";
@@ -47,7 +54,7 @@ public class AddCarController {
 
         } catch (Exception e) {
             e.printStackTrace();
-            System.err.println("Ошибка загрузки моделей машин для ComboBox");
+            showErrorAlert("Ошибка", "Ошибка загрузки моделей машин для ComboBox");
         }
     }
 
@@ -74,16 +81,14 @@ public class AddCarController {
             preparedStatement.setString(2, number.trim());
 
             int rowsInserted = preparedStatement.executeUpdate();
-            if (rowsInserted > 0) {
-                System.out.println("Успешно добавлено в БД! Машина: " + selectedModel.getBrand() + " [" + number + "]");
-            }
+
 
             Stage stage = (Stage) numberField.getScene().getWindow();
             stage.close();
 
         } catch (Exception e) {
             e.printStackTrace();
-            System.err.println("Ошибка при сохранении автомобиля в базу данных!");
+            showErrorAlert("Ошибка", "Ошибка при сохранении автомобиля в базу данных!");
         }
     }
 }

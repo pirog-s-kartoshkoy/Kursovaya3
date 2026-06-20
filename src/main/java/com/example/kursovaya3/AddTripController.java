@@ -3,6 +3,7 @@ package com.example.kursovaya3;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
@@ -49,6 +50,13 @@ public class AddTripController {
             e.printStackTrace();
         }
     }
+    private void showErrorAlert(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
 
     private void loadCars() {
         ObservableList<CarComboItem> carList = FXCollections.observableArrayList();
@@ -67,6 +75,7 @@ public class AddTripController {
             }
             carComboBox.setItems(carList);
         } catch (Exception e) {
+            showErrorAlert("Критическая ошибка", "Не удалось добавить Trip");
             e.printStackTrace();
         }
     }
@@ -78,7 +87,7 @@ public class AddTripController {
         String durationStr = durationField.getText();
 
         if (selectedClient == null || selectedCar == null || durationStr.trim().isEmpty()) {
-            System.out.println("Заполните все поля!");
+            showErrorAlert("Ошибка", "Заполните все поля!");
             return;
         }
 
@@ -97,16 +106,14 @@ public class AddTripController {
                 preparedStatement.setString(4, currentDate.toString()); // Записывает в формате YYYY-MM-DD
 
                 int rows = preparedStatement.executeUpdate();
-                if (rows > 0) {
-                    System.out.println("Прокат успешно оформлен!");
-                }
+
 
                 Stage stage = (Stage) durationField.getScene().getWindow();
                 stage.close();
             }
 
         } catch (NumberFormatException e) {
-            System.out.println("Ошибка: Дни проката должны быть числом!");
+            showErrorAlert("Ошибка", "Дни проката должны быть числом!");
         } catch (Exception e) {
             e.printStackTrace();
         }
