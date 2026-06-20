@@ -57,6 +57,7 @@ public class MainMenuWindowControllert {
     @FXML
     private TableColumn<Trip, Double> tripPriceColumn;
 
+    // Обе кнопки приведены к точному регистру их fx:id в Scene Builder
     @FXML private Button carClick;
     @FXML private Button TripClick;
 
@@ -148,59 +149,47 @@ public class MainMenuWindowControllert {
         }
     }
 
-    // Метод для безопасного получения роли из окна авторизации
     public void setRole(String role) {
-        System.out.println("----------------------------------------");
-        System.out.println("[МЫ В ГЛАВНОМ МЕНЮ] Успешно получена роль: " + role);
-        System.out.println("----------------------------------------");
-        // ТЕСТОВЫЙ ВЫВОД: Проверяем, привязались ли кнопки к fx:id
-        System.out.println("Проверка связи с FXML:");
-        System.out.println("Кнопка машины (carClick) связана: " + (carClick != null));
-        System.out.println("Кнопка проката (tripClick) связана: " + (TripClick != null));
 
-        System.out.println("----------------------------------------");
-        System.out.println("[МЫ В ГЛАВНОМ МЕНЮ] Успешно получена роль: " + role);
-        System.out.println("----------------------------------------");
-
-
-        // Если роль НЕ admin, полностью скрываем кнопки с интерфейса
         if (!"admin".equalsIgnoreCase(role)) {
             if (carClick != null) {
                 carClick.setVisible(false);
-                carClick.setManaged(false); // Убирает место, которое занимала кнопка
+                carClick.setManaged(false);
             }
             if (TripClick != null) {
                 TripClick.setVisible(false);
                 TripClick.setManaged(false);
             }
         } else {
-            // Если зашел админ — принудительно делаем их видимыми (на всякий случай)
             if (carClick != null) {
                 carClick.setVisible(true);
                 carClick.setManaged(true);
+                carClick.toFront();
             }
             if (TripClick != null) {
                 TripClick.setVisible(true);
                 TripClick.setManaged(true);
+                TripClick.toFront();
             }
         }
     }
+
     @FXML
     private void onAddCarClick() {
         try {
-            // Указываем твое новое имя файла — просто AddCar.fxml
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("AddCar.fxml"));
             Scene scene = new Scene(fxmlLoader.load(), 400, 300);
 
             Stage dialogStage = new Stage();
             dialogStage.setTitle("Новый автомобиль");
-
-            // Делаем окно модальным
             dialogStage.initModality(javafx.stage.Modality.WINDOW_MODAL);
             dialogStage.initOwner(carClick.getScene().getWindow());
 
             dialogStage.setScene(scene);
-            dialogStage.showAndWait(); // Ждем закрытия
+            dialogStage.showAndWait();
+
+            System.out.println("Окно добавления закрылось, обновляем список машин на экране...");
+            loadCarsFromDatabase();
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -208,9 +197,29 @@ public class MainMenuWindowControllert {
         }
     }
 
-    // Этот метод мы добавили на прошлом шаге (для проката)
     @FXML
-    private void TripClick() {
-        System.out.println("Сработало onAction: Нажата кнопка добавления проката!");
+    private void TripClick(javafx.event.ActionEvent event) { // Добавили аргумент event
+        try {
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("AddTrip.fxml"));
+            Scene scene = new Scene(fxmlLoader.load(), 450, 400);
+
+            Stage dialogStage = new Stage();
+            dialogStage.setTitle("Оформить прокат");
+            dialogStage.initModality(javafx.stage.Modality.WINDOW_MODAL);
+
+            // ВМЕСТО кнопки берем окно прямо из события клика (работает всегда на 100%)
+            javafx.scene.Node source = (javafx.scene.Node) event.getSource();
+            dialogStage.initOwner(source.getScene().getWindow());
+
+            dialogStage.setScene(scene);
+            dialogStage.showAndWait();
+
+            System.out.println("Окно проката закрылось, обновляем список заказов...");
+            loadTripsFromDatabase();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.err.println("Не удалось найти или открыть файл AddTrip.fxml!");
+        }
     }
 }

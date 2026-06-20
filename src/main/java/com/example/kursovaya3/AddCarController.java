@@ -58,18 +58,37 @@ public class AddCarController {
         CarModel selectedModel = modelComboBox.getValue();
         String number = numberField.getText();
 
+        // Небольшая валидация на пустые поля
         if (selectedModel == null || number.trim().isEmpty()) {
             System.out.println("Заполните все поля!");
             return;
         }
 
-        // ТЕСТОВЫЙ ВЫВОД: Проверяем, что всё подцепилось правильно
-        System.out.println("ID выбранной модели: " + selectedModel.getIdModel());
-        System.out.println("Марка: " + selectedModel.getBrand());
-        System.out.println("Гос. номер: " + number);
+        String url = "jdbc:mysql://localhost:3306/carrent";
+        String user = "root";
+        String dbPassword = "";
 
-        // Закрываем окно
-        Stage stage = (Stage) numberField.getScene().getWindow();
-        stage.close();
+        // SQL-запрос на добавление записи в таблицу car
+        String query = "INSERT INTO car (id_model, reg_number) VALUES (?, ?)";
+
+        try (Connection connection = DriverManager.getConnection(url, user, dbPassword);
+             PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+
+            preparedStatement.setInt(1, selectedModel.getIdModel());
+            preparedStatement.setString(2, number.trim());
+
+            int rowsInserted = preparedStatement.executeUpdate();
+            if (rowsInserted > 0) {
+                System.out.println("Успешно добавлено в БД! Машина: " + selectedModel.getBrand() + " [" + number + "]");
+            }
+
+            // Закрываем модальное окно после сохранения
+            Stage stage = (Stage) numberField.getScene().getWindow();
+            stage.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.err.println("Ошибка при сохранении автомобиля в базу данных!");
+        }
     }
 }

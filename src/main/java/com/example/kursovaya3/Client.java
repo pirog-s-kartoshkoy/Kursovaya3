@@ -17,4 +17,8 @@ public class Client {
     public String getFullName() { return fullName; }
     public String getGender() { return gender; }
     public String getPhone() { return phone; }
+    @Override
+    public String toString() {
+        return this.fullName;
+    }
 }

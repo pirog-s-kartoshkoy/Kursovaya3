@@ -53,7 +53,7 @@ public class HelloController {
 
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 if (resultSet.next()) {
-                    return resultSet.getString("role"); // Возвращаем роль из БД
+                    return resultSet.getString("role");
                 }
             }
             return null;
@@ -84,9 +84,8 @@ public class HelloController {
             currentStage.close();
 
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("MainMenu.fxml"));
-            Scene scene = new Scene(fxmlLoader.load(), 1000, 600);
+            Scene scene = new Scene(fxmlLoader.load(), 1000, 700);
 
-            // Получаем контроллер СТРОГО после fxmlLoader.load()
             MainMenuWindowControllert mainMenuController = fxmlLoader.getController();
             if (mainMenuController != null) {
                 mainMenuController.setRole(role); // Вызываем наш тестовый метод
