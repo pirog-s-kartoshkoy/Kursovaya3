@@ -14,7 +14,6 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
@@ -79,6 +78,7 @@ public class MainMenuWindowControllert {
         tripPriceColumn.setCellValueFactory(new PropertyValueFactory<>("totalPrice"));
         loadTripsFromDatabase();
     }
+
     private void showErrorAlert(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle(title);
@@ -89,21 +89,16 @@ public class MainMenuWindowControllert {
 
     private void loadCarsFromDatabase() {
         ObservableList<Car> carList = FXCollections.observableArrayList();
-        String url = "jdbc:mysql://localhost:3306/carrent";
-        String user = "root";
-        String dbPassword = "";
         String query = "SELECT car.id_car, car_model.brand, car.reg_number FROM car INNER JOIN car_model ON car.id_model = car_model.id_model";
 
-        try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            try (Connection connection = DriverManager.getConnection(url, user, dbPassword);
-                 PreparedStatement preparedStatement = connection.prepareStatement(query);
-                 ResultSet resultSet = preparedStatement.executeQuery()) {
-                while (resultSet.next()) {
-                    carList.add(new Car(resultSet.getInt("id_car"), resultSet.getString("brand"), resultSet.getString("reg_number")));
-                }
-                carsTable.setItems(carList);
+        Connection connection = DatabaseManager.getInstance().getConnection();
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query);
+             ResultSet resultSet = preparedStatement.executeQuery()) {
+            while (resultSet.next()) {
+                carList.add(new Car(resultSet.getInt("id_car"), resultSet.getString("brand"), resultSet.getString("reg_number")));
             }
+            carsTable.setItems(carList);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -111,21 +106,16 @@ public class MainMenuWindowControllert {
 
     private void loadClientsFromDatabase() {
         ObservableList<Client> clientList = FXCollections.observableArrayList();
-        String url = "jdbc:mysql://localhost:3306/carrent";
-        String user = "root";
-        String dbPassword = "";
         String query = "SELECT id_client, CONCAT(last_name, ' ', first_name) AS fio, gender, phone FROM client";
 
-        try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            try (Connection connection = DriverManager.getConnection(url, user, dbPassword);
-                 PreparedStatement preparedStatement = connection.prepareStatement(query);
-                 ResultSet resultSet = preparedStatement.executeQuery()) {
-                while (resultSet.next()) {
-                    clientList.add(new Client(resultSet.getInt("id_client"), resultSet.getString("fio"), resultSet.getString("gender"), resultSet.getString("phone")));
-                }
-                clientsTable.setItems(clientList);
+        Connection connection = DatabaseManager.getInstance().getConnection();
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query);
+             ResultSet resultSet = preparedStatement.executeQuery()) {
+            while (resultSet.next()) {
+                clientList.add(new Client(resultSet.getInt("id_client"), resultSet.getString("fio"), resultSet.getString("gender"), resultSet.getString("phone")));
             }
+            clientsTable.setItems(clientList);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -133,10 +123,6 @@ public class MainMenuWindowControllert {
 
     private void loadTripsFromDatabase() {
         ObservableList<Trip> tripList = FXCollections.observableArrayList();
-        String url = "jdbc:mysql://localhost:3306/carrent";
-        String user = "root";
-        String dbPassword = "";
-
         String query = "SELECT t.id_trip, " +
                 "CONCAT(cl.last_name, ' ', cl.first_name) AS client_fio, " +
                 "cm.brand, " +
@@ -148,30 +134,27 @@ public class MainMenuWindowControllert {
                 "INNER JOIN car c ON t.id_car = c.id_car " +
                 "INNER JOIN car_model cm ON c.id_model = cm.id_model";
 
-        try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            try (Connection connection = DriverManager.getConnection(url, user, dbPassword);
-                 PreparedStatement preparedStatement = connection.prepareStatement(query);
-                 ResultSet resultSet = preparedStatement.executeQuery()) {
-                while (resultSet.next()) {
-                    tripList.add(new Trip(
-                            resultSet.getInt("id_trip"),
-                            resultSet.getString("client_fio"),
-                            resultSet.getString("brand"),
-                            resultSet.getInt("duration_days"),
-                            resultSet.getString("trip_date"),
-                            resultSet.getDouble("total_price")
-                    ));
-                }
-                tripsTable.setItems(tripList);
+        Connection connection = DatabaseManager.getInstance().getConnection();
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query);
+             ResultSet resultSet = preparedStatement.executeQuery()) {
+            while (resultSet.next()) {
+                tripList.add(new Trip(
+                        resultSet.getInt("id_trip"),
+                        resultSet.getString("client_fio"),
+                        resultSet.getString("brand"),
+                        resultSet.getInt("duration_days"),
+                        resultSet.getString("trip_date"),
+                        resultSet.getDouble("total_price")
+                ));
             }
+            tripsTable.setItems(tripList);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     public void setRole(String role) {
-
         if (!"admin".equalsIgnoreCase(role)) {
             if (carClick != null) {
                 carClick.setVisible(false);
@@ -216,7 +199,7 @@ public class MainMenuWindowControllert {
     }
 
     @FXML
-    private void TripClick(javafx.event.ActionEvent event) { // Добавили аргумент event
+    private void TripClick(javafx.event.ActionEvent event) {
         try {
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("AddTrip.fxml"));
             Scene scene = new Scene(fxmlLoader.load(), 450, 400);
@@ -248,23 +231,16 @@ public class MainMenuWindowControllert {
             return;
         }
 
-        String url = "jdbc:mysql://localhost:3306/carrent";
-        String user = "root";
-        String dbPassword = "";
-
         String query = "DELETE FROM car WHERE id_car = ?";
+        Connection connection = DatabaseManager.getInstance().getConnection();
 
-        try (Connection connection = DriverManager.getConnection(url, user, dbPassword);
-             PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-
-            preparedStatement.setInt(1, selectedCar.getIdCar()); // Вытаскиваем ID машины
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            preparedStatement.setInt(1, selectedCar.getIdCar());
 
             int rowsDeleted = preparedStatement.executeUpdate();
             if (rowsDeleted > 0) {
                 loadCarsFromDatabase();
             }
-
-        } catch (java.sql.SQLIntegrityConstraintViolationException e) {
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -279,22 +255,16 @@ public class MainMenuWindowControllert {
             return;
         }
 
-        String url = "jdbc:mysql://localhost:3306/carrent";
-        String user = "root";
-        String dbPassword = "";
-
         String query = "DELETE FROM trip WHERE id_trip = ?";
+        Connection connection = DatabaseManager.getInstance().getConnection();
 
-        try (Connection connection = DriverManager.getConnection(url, user, dbPassword);
-             PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
             preparedStatement.setInt(1, selectedTrip.getIdTrip());
 
             int rowsDeleted = preparedStatement.executeUpdate();
             if (rowsDeleted > 0) {
                 loadTripsFromDatabase();
             }
-
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -307,10 +277,7 @@ public class MainMenuWindowControllert {
             javafx.scene.Scene scene = new Scene(fxmlLoader.load(), 350, 300);
 
             ChangeAuthController controller = fxmlLoader.getController();
-
             int currentId = UserSession.getUserId();
-            System.out.println("MainMenu передает в ChangeAuth настоящий id_user = " + currentId);
-
             controller.setUserId(currentId);
 
             Stage stage = new Stage();
@@ -324,11 +291,11 @@ public class MainMenuWindowControllert {
             e.printStackTrace();
         }
     }
+
     @FXML
     private void onAddFineClick(javafx.event.ActionEvent event) {
         Trip selectedTrip = tripsTable.getSelectionModel().getSelectedItem();
 
-        // Защита от клика по пустой строке
         if (selectedTrip == null) {
             showErrorAlert("Ошибка", "Сначала выберите прокат в таблице для начисления штрафа!");
             return;

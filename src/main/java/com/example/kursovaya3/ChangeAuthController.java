@@ -8,26 +8,22 @@ import javafx.stage.Stage;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
 public class ChangeAuthController {
 
     @FXML private TextField newLoginField;
+    @FXML private TextField newPhoneField; // Текстовое поле для телефона
     @FXML private PasswordField oldPasswordField;
     @FXML private PasswordField newPasswordField;
     @FXML private PasswordField confirmNewPasswordField;
 
-    private int currentUserId = 0; // Изначально 0
-    private final String url = "jdbc:mysql://localhost:3306/carrent";
-    private final String user = "root";
-    private final String dbPassword = "";
+    private int currentUserId = 0;
 
-    // Метод для передачи ID пользователя из личного кабинета
     public void setUserId(int idUser) {
         this.currentUserId = idUser;
-        loadCurrentLogin();
+        loadCurrentUserData();
     }
 
     private void showErrorAlert(String message) {
@@ -38,14 +34,22 @@ public class ChangeAuthController {
         alert.showAndWait();
     }
 
-    private void loadCurrentLogin() {
-        String query = "SELECT login FROM user WHERE id_user = ?";
-        try (Connection connection = DriverManager.getConnection(url, user, dbPassword);
-             PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+    private void loadCurrentUserData() {
+        String query = "SELECT u.login, cl.phone FROM user u " +
+                "LEFT JOIN client cl ON u.id_client = cl.id_client " +
+                "WHERE u.id_user = ?";
+
+        Connection connection = DatabaseManager.getInstance().getConnection();
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
             preparedStatement.setInt(1, currentUserId);
             try (ResultSet rs = preparedStatement.executeQuery()) {
                 if (rs.next()) {
                     newLoginField.setText(rs.getString("login"));
+                    String currentPhone = rs.getString("phone");
+                    if (currentPhone != null) {
+                        newPhoneField.setText(currentPhone);
+                    }
                 }
             }
         } catch (Exception e) {
@@ -56,24 +60,24 @@ public class ChangeAuthController {
     @FXML
     private void onChangeAuthClick() {
         String newLogin = newLoginField.getText().trim();
+        String newPhone = newPhoneField.getText().trim();
         String oldPassword = oldPasswordField.getText().trim();
         String newPassword = newPasswordField.getText().trim();
         String confirmNewPassword = confirmNewPasswordField.getText().trim();
 
-
-        if (newLogin.isEmpty() || oldPassword.isEmpty()) {
-            showErrorAlert("Ошибка: Логин и текущий пароль обязательны!");
+        if (newLogin.isEmpty() || oldPassword.isEmpty() || newPhone.isEmpty()) {
+            showErrorAlert("Ошибка: Логин, телефон и текущий пароль обязательны!");
             return;
         }
-
-        // Проверяем текущий пароль
         if (!checkOldPassword(oldPassword)) {
             showErrorAlert("Ошибка: Текущий пароль введен неверно!");
             return;
         }
 
         boolean isPasswordChanged = !newPassword.isEmpty();
-        String updateQuery;
+
+        String updateQueryUser;
+        String updateClientQuery = "UPDATE client SET phone = ? WHERE id_client = (SELECT id_client FROM user WHERE id_user = ?)";
 
         if (isPasswordChanged) {
             if (!newPassword.equals(confirmNewPassword)) {
@@ -81,52 +85,64 @@ public class ChangeAuthController {
                 return;
             }
 
-            String passwordRegex = "^(?=.*[0-9])(?=.*[A-Z]).{6,}$";
+            String passwordRegex = "^(?=.*[0-9])(?=.*[A-Z])(?=.*[!@#$%^&*]).{8,}$";
             if (!newPassword.matches(passwordRegex)) {
-                showErrorAlert("Ошибка: Новый пароль не соответствует требованиям (от 6 символов, минимум 1 цифра и 1 заглавная буква).");
+                showErrorAlert("Ошибка: Пароль должен быть от 8 символов и содержать цифру, заглавную букву и спецсимвол!");
                 return;
             }
 
-            updateQuery = "UPDATE user SET login = ?, password_hash = ? WHERE id_user = ?";
+            updateQueryUser = "UPDATE user SET login = ?, password_hash = ? WHERE id_user = ?";
         } else {
-            updateQuery = "UPDATE user SET login = ? WHERE id_user = ?";
+            updateQueryUser = "UPDATE user SET login = ? WHERE id_user = ?";
         }
 
-        try (Connection connection = DriverManager.getConnection(url, user, dbPassword);
-             PreparedStatement preparedStatement = connection.prepareStatement(updateQuery)) {
+        Connection connection = DatabaseManager.getInstance().getConnection();
 
-            preparedStatement.setString(1, newLogin);
+        try {
+            connection.setAutoCommit(false);
 
-            if (isPasswordChanged) {
-                preparedStatement.setString(2, hashPasswordSHA256(newPassword));
-                preparedStatement.setInt(3, currentUserId);
-            } else {
-                preparedStatement.setInt(2, currentUserId);
+            try (PreparedStatement clientStmt = connection.prepareStatement(updateClientQuery)) {
+                clientStmt.setString(1, newPhone);
+                clientStmt.setInt(2, currentUserId);
+                clientStmt.executeUpdate();
             }
 
-            int rows = preparedStatement.executeUpdate();
-            if (rows > 0) {
-                System.out.println("Данные успешно изменены в БД!");
-                Stage stage = (Stage) newLoginField.getScene().getWindow();
-                stage.close();
+            try (PreparedStatement userStmt = connection.prepareStatement(updateQueryUser)) {
+                userStmt.setString(1, newLogin);
+                if (isPasswordChanged) {
+                    userStmt.setString(2, hashPasswordSHA256(newPassword));
+                    userStmt.setInt(3, currentUserId);
+                } else {
+                    userStmt.setInt(2, currentUserId);
+                }
+                userStmt.executeUpdate();
             }
+
+            connection.commit();
+            System.out.println("Профиль успешно обновлен!");
+
+            Stage stage = (Stage) newLoginField.getScene().getWindow();
+            stage.close();
+
         } catch (Exception e) {
+            try { connection.rollback(); } catch (Exception ex) { ex.printStackTrace(); }
             e.printStackTrace();
-            showErrorAlert("Ошибка при сохранении данных в базу. Возможно, логин уже занят.");
+            showErrorAlert("Ошибка сохранения: Возможно, этот логин уже кем-то занят.");
+        } finally {
+            try { connection.setAutoCommit(true); } catch (Exception ex) { ex.printStackTrace(); }
         }
     }
 
     private boolean checkOldPassword(String oldPassword) {
         String query = "SELECT password_hash FROM user WHERE id_user = ?";
-        try (Connection connection = DriverManager.getConnection(url, user, dbPassword);
-             PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+        Connection connection = DatabaseManager.getInstance().getConnection();
 
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
             preparedStatement.setInt(1, currentUserId);
             try (ResultSet rs = preparedStatement.executeQuery()) {
                 if (rs.next()) {
                     String dbHash = rs.getString("password_hash");
                     String inputHash = hashPasswordSHA256(oldPassword);
-
                     return dbHash.equalsIgnoreCase(inputHash);
                 }
             }

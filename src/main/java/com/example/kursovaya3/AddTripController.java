@@ -8,7 +8,6 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.time.LocalDate;
@@ -19,22 +18,27 @@ public class AddTripController {
     @FXML private ComboBox<CarComboItem> carComboBox;
     @FXML private TextField durationField;
 
-    private final String url = "jdbc:mysql://localhost:3306/carrent";
-    private final String user = "root";
-    private final String dbPassword = "";
-
     @FXML
     public void initialize() {
         loadClients();
         loadCars();
     }
 
+    private void showErrorAlert(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+
     private void loadClients() {
         ObservableList<Client> clientList = FXCollections.observableArrayList();
         String query = "SELECT id_client, CONCAT(last_name, ' ', first_name) AS fio, gender, phone FROM client";
 
-        try (Connection connection = DriverManager.getConnection(url, user, dbPassword);
-             PreparedStatement preparedStatement = connection.prepareStatement(query);
+        Connection connection = DatabaseManager.getInstance().getConnection();
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query);
              ResultSet resultSet = preparedStatement.executeQuery()) {
 
             while (resultSet.next()) {
@@ -48,22 +52,17 @@ public class AddTripController {
             clientComboBox.setItems(clientList);
         } catch (Exception e) {
             e.printStackTrace();
+            showErrorAlert("Ошибка", "Не удалось загрузить список клиентов!");
         }
-    }
-    private void showErrorAlert(String title, String message) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
     }
 
     private void loadCars() {
         ObservableList<CarComboItem> carList = FXCollections.observableArrayList();
         String query = "SELECT c.id_car, cm.brand, c.reg_number FROM car c INNER JOIN car_model cm ON c.id_model = cm.id_model";
 
-        try (Connection connection = DriverManager.getConnection(url, user, dbPassword);
-             PreparedStatement preparedStatement = connection.prepareStatement(query);
+        Connection connection = DatabaseManager.getInstance().getConnection();
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query);
              ResultSet resultSet = preparedStatement.executeQuery()) {
 
             while (resultSet.next()) {
@@ -75,8 +74,8 @@ public class AddTripController {
             }
             carComboBox.setItems(carList);
         } catch (Exception e) {
-            showErrorAlert("Критическая ошибка", "Не удалось добавить Trip");
             e.printStackTrace();
+            showErrorAlert("Ошибка", "Не удалось загрузить список автомобилей!");
         }
     }
 
@@ -96,17 +95,15 @@ public class AddTripController {
             LocalDate currentDate = LocalDate.now(); // Текущая дата проката
 
             String query = "INSERT INTO trip (id_client, id_car, duration_days, trip_date) VALUES (?, ?, ?, ?)";
+            Connection connection = DatabaseManager.getInstance().getConnection();
 
-            try (Connection connection = DriverManager.getConnection(url, user, dbPassword);
-                 PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-
+            try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
                 preparedStatement.setInt(1, selectedClient.getIdClient());
                 preparedStatement.setInt(2, selectedCar.getIdCar());
                 preparedStatement.setInt(3, duration);
-                preparedStatement.setString(4, currentDate.toString()); // Записывает в формате YYYY-MM-DD
+                preparedStatement.setString(4, currentDate.toString()); // Формат YYYY-MM-DD
 
-                int rows = preparedStatement.executeUpdate();
-
+                preparedStatement.executeUpdate();
 
                 Stage stage = (Stage) durationField.getScene().getWindow();
                 stage.close();
@@ -116,6 +113,7 @@ public class AddTripController {
             showErrorAlert("Ошибка", "Дни проката должны быть числом!");
         } catch (Exception e) {
             e.printStackTrace();
+            showErrorAlert("Ошибка", "Не удалось сохранить запись о прокате!");
         }
     }
 }

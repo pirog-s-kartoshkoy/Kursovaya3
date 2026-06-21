@@ -8,7 +8,6 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
@@ -24,6 +23,7 @@ public class AddCarController {
     public void initialize() {
         loadCarModels();
     }
+
     private void showErrorAlert(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle(title);
@@ -31,16 +31,14 @@ public class AddCarController {
         alert.setContentText(message);
         alert.showAndWait();
     }
-    private void loadCarModels() {
-        String url = "jdbc:mysql://localhost:3306/carrent";
-        String user = "root";
-        String dbPassword = "";
-        String query = "SELECT id_model, brand, price_per_day FROM car_model";
 
+    private void loadCarModels() {
+        String query = "SELECT id_model, brand, price_per_day FROM car_model";
         ObservableList<CarModel> models = FXCollections.observableArrayList();
 
-        try (Connection connection = DriverManager.getConnection(url, user, dbPassword);
-             PreparedStatement preparedStatement = connection.prepareStatement(query);
+        Connection connection = DatabaseManager.getInstance().getConnection();
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query);
              ResultSet resultSet = preparedStatement.executeQuery()) {
 
             while (resultSet.next()) {
@@ -64,24 +62,19 @@ public class AddCarController {
         String number = numberField.getText();
 
         if (selectedModel == null || number.trim().isEmpty()) {
-            System.out.println("Заполните все поля!");
+            showErrorAlert("Внимание", "Заполните все поля!");
             return;
         }
 
-        String url = "jdbc:mysql://localhost:3306/carrent";
-        String user = "root";
-        String dbPassword = "";
-
         String query = "INSERT INTO car (id_model, reg_number) VALUES (?, ?)";
+        Connection connection = DatabaseManager.getInstance().getConnection();
 
-        try (Connection connection = DriverManager.getConnection(url, user, dbPassword);
-             PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
 
             preparedStatement.setInt(1, selectedModel.getIdModel());
             preparedStatement.setString(2, number.trim());
 
-            int rowsInserted = preparedStatement.executeUpdate();
-
+            preparedStatement.executeUpdate();
 
             Stage stage = (Stage) numberField.getScene().getWindow();
             stage.close();

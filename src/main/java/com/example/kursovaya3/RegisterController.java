@@ -10,7 +10,6 @@ import javafx.stage.Stage;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
@@ -22,10 +21,6 @@ public class RegisterController {
     @FXML private PasswordField confirmPasswordField;
     @FXML private TextField phoneField;
     @FXML private ComboBox<String> genderComboBox;
-
-    private final String url = "jdbc:mysql://localhost:3306/carrent";
-    private final String user = "root";
-    private final String dbPassword = "";
 
     @FXML
     public void initialize() {
@@ -53,11 +48,9 @@ public class RegisterController {
             return;
         }
 
-        // --- ПРОВЕРКА ПАРОЛЯ ПО REGEX ---
-        // Пароль должен быть от 6 символов, содержать минимум 1 цифру и 1 заглавную букву
-        String passwordRegex = "^(?=.*[0-9])(?=.*[A-Z]).{6,}$";
+        String passwordRegex = "^(?=.*[0-9])(?=.*[A-Z])(?=.*[!@#$%^&*]).{8,}$";
         if (!password.matches(passwordRegex)) {
-            showErrorAlert("Ошибка: Пароль слишком простой! Требуется: не менее 6 символов, минимум одна цифра и одна заглавная буква.");
+            showErrorAlert("Ошибка: Пароль слишком простой! Требуется: не менее 8 символов, минимум одна цифра, одна заглавная буква и один спецсимвол (!@#$%^&*).");
             return;
         }
 
@@ -75,9 +68,9 @@ public class RegisterController {
 
     private boolean isLoginExists(String login) {
         String query = "SELECT COUNT(*) FROM user WHERE login = ?";
-        try (Connection connection = DriverManager.getConnection(url, user, dbPassword);
-             PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+        Connection connection = DatabaseManager.getInstance().getConnection();
 
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
             preparedStatement.setString(1, login);
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 if (resultSet.next()) {
@@ -94,9 +87,8 @@ public class RegisterController {
         String insertClientQuery = "INSERT INTO client (last_name, first_name, gender, phone) VALUES (?, '', ?, ?)";
         String insertUserQuery = "INSERT INTO user (login, password_hash, role, id_client) VALUES (?, ?, 'user', ?)";
 
-        Connection connection = null;
+        Connection connection = DatabaseManager.getInstance().getConnection();
         try {
-            connection = DriverManager.getConnection(url, user, dbPassword);
             connection.setAutoCommit(false);
 
             int generatedClientId = -1;
@@ -115,10 +107,10 @@ public class RegisterController {
             }
 
             if (generatedClientId == -1) {
-                showErrorAlert("Не удалось получить сгенерированный ID клиента.");
                 throw new Exception("Не удалось получить сгенерированный ID клиента.");
             }
 
+            // 2. Создаем связанную учетную запись в таблице user
             try (PreparedStatement userStmt = connection.prepareStatement(insertUserQuery)) {
                 userStmt.setString(1, login);
                 userStmt.setString(2, hashedPassword);
@@ -132,15 +124,11 @@ public class RegisterController {
             stage.close();
 
         } catch (Exception e) {
-            if (connection != null) {
-                try { connection.rollback(); } catch (Exception ex) { ex.printStackTrace(); }
-            }
+            try { connection.rollback(); } catch (Exception ex) { ex.printStackTrace(); }
             e.printStackTrace();
-            showErrorAlert("Ошибка при комплексной регистрации пользователя.");
+            showErrorAlert("Ошибка при комплексной транзакционной регистрации пользователя.");
         } finally {
-            if (connection != null) {
-                try { connection.close(); } catch (Exception ex) { ex.printStackTrace(); }
-            }
+            try { connection.setAutoCommit(true); } catch (Exception ex) { ex.printStackTrace(); }
         }
     }
 

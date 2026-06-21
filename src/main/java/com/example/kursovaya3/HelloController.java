@@ -11,7 +11,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
@@ -42,18 +41,12 @@ public class HelloController {
     }
 
     private String checkLoginInDatabase(String login, String password) throws ClassNotFoundException {
-        String url = "jdbc:mysql://localhost:3306/carrent";
-        String user = "root";
-        String dbPassword = "";
-
         String hashedPassword = hashPasswordSHA256(password);
-
-        // КРИТИЧЕСКОЕ ИЗМЕНЕНИЕ: Добавили id_user в выборку SELECT
         String query = "SELECT id_user, role FROM user WHERE login = ? AND password_hash = ?";
 
-        Class.forName("com.mysql.cj.jdbc.Driver");
-        try (Connection connection = DriverManager.getConnection(url, user, dbPassword);
-             PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+        Connection connection = DatabaseManager.getInstance().getConnection();
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
 
             preparedStatement.setString(1, login);
             preparedStatement.setString(2, hashedPassword);
