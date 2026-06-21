@@ -92,7 +92,7 @@ public class AddTripController {
 
         try {
             int duration = Integer.parseInt(durationStr.trim());
-            LocalDate currentDate = LocalDate.now(); // Текущая дата проката
+            LocalDate currentDate = LocalDate.now();
 
             String query = "INSERT INTO trip (id_client, id_car, duration_days, trip_date) VALUES (?, ?, ?, ?)";
             Connection connection = DatabaseManager.getInstance().getConnection();
