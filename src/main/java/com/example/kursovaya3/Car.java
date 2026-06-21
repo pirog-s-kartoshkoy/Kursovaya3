@@ -12,6 +12,6 @@ public class Car {
     }
 
     public int getIdCar() { return idCar; }
-    public String getBrand() { return brand; } // Изменили геттер под новое поле
+    public String getBrand() { return brand; }
     public String getRegNumber() { return regNumber; }
 }

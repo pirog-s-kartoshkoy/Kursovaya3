@@ -22,5 +22,5 @@ public class Trip {
     public String getCarBrand() { return carBrand; }
     public int getDurationDays() { return durationDays; }
     public String getTripDate() { return tripDate; }
-    public double getTotalPrice() { return totalPrice; } // Геттер для JavaFX
+    public double getTotalPrice() { return totalPrice; }
 }

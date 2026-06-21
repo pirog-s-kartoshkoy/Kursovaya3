@@ -65,7 +65,6 @@ public class AddFineController {
             return;
         }
 
-        // Параметрические запросы для защиты от SQL-инъекций (п. 11)
         String checkQuery = "SELECT COUNT(*) FROM fine WHERE id_trip = ? AND id_fine_type = ?";
         String insertFineQuery = "INSERT INTO fine (id_trip, id_fine_type) VALUES (?, ?)";
 
@@ -103,7 +102,6 @@ public class AddFineController {
             e.printStackTrace();
             showErrorAlert("Ошибка", "Ошибка при начислении штрафа!");
         } finally {
-            // Обязательно возвращаем автокоммит в true, но соединение НЕ закрываем
             try { connection.setAutoCommit(true); } catch (Exception ex) { ex.printStackTrace(); }
         }
     }

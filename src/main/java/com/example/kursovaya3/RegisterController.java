@@ -110,7 +110,6 @@ public class RegisterController {
                 throw new Exception("Не удалось получить сгенерированный ID клиента.");
             }
 
-            // 2. Создаем связанную учетную запись в таблице user
             try (PreparedStatement userStmt = connection.prepareStatement(insertUserQuery)) {
                 userStmt.setString(1, login);
                 userStmt.setString(2, hashedPassword);
