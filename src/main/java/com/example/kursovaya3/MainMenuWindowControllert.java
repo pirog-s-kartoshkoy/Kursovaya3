@@ -56,6 +56,8 @@ public class MainMenuWindowControllert {
 
     @FXML private Button carClick;
     @FXML private Button TripClick;
+    @FXML private Button deleteTripClick;
+    @FXML private Button addFineTripClick;
 
     @FXML
     public void initialize() {
@@ -164,6 +166,14 @@ public class MainMenuWindowControllert {
                 TripClick.setVisible(false);
                 TripClick.setManaged(false);
             }
+            if (deleteTripClick != null) {
+                deleteTripClick.setVisible(false);
+                deleteTripClick.setManaged(false);
+            }
+            if (addFineTripClick != null) {
+                addFineTripClick.setVisible(false);
+                addFineTripClick.setManaged(false);
+            }
         } else {
             if (carClick != null) {
                 carClick.setVisible(true);
@@ -174,6 +184,16 @@ public class MainMenuWindowControllert {
                 TripClick.setVisible(true);
                 TripClick.setManaged(true);
                 TripClick.toFront();
+            }
+            if (deleteTripClick != null) {
+                deleteTripClick.setVisible(true);
+                deleteTripClick.setManaged(true);
+                deleteTripClick.toFront();
+            }
+            if (addFineTripClick != null) {
+                addFineTripClick.setVisible(true);
+                addFineTripClick.setManaged(true);
+                addFineTripClick.toFront();
             }
         }
     }
