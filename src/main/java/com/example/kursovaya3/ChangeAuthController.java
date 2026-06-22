@@ -14,7 +14,6 @@ import java.sql.ResultSet;
 public class ChangeAuthController {
 
     @FXML private TextField newLoginField;
-    @FXML private TextField newPhoneField; // Текстовое поле для телефона
     @FXML private PasswordField oldPasswordField;
     @FXML private PasswordField newPasswordField;
     @FXML private PasswordField confirmNewPasswordField;
@@ -47,9 +46,6 @@ public class ChangeAuthController {
                 if (rs.next()) {
                     newLoginField.setText(rs.getString("login"));
                     String currentPhone = rs.getString("phone");
-                    if (currentPhone != null) {
-                        newPhoneField.setText(currentPhone);
-                    }
                 }
             }
         } catch (Exception e) {
@@ -60,13 +56,12 @@ public class ChangeAuthController {
     @FXML
     private void onChangeAuthClick() {
         String newLogin = newLoginField.getText().trim();
-        String newPhone = newPhoneField.getText().trim();
         String oldPassword = oldPasswordField.getText().trim();
         String newPassword = newPasswordField.getText().trim();
         String confirmNewPassword = confirmNewPasswordField.getText().trim();
 
-        if (newLogin.isEmpty() || oldPassword.isEmpty() || newPhone.isEmpty()) {
-            showErrorAlert("Ошибка: Логин, телефон и текущий пароль обязательны!");
+        if (newLogin.isEmpty() || oldPassword.isEmpty()) {
+            showErrorAlert("Ошибка: Логин и текущий пароль обязательны!");
             return;
         }
         if (!checkOldPassword(oldPassword)) {
@@ -102,7 +97,6 @@ public class ChangeAuthController {
             connection.setAutoCommit(false);
 
             try (PreparedStatement clientStmt = connection.prepareStatement(updateClientQuery)) {
-                clientStmt.setString(1, newPhone);
                 clientStmt.setInt(2, currentUserId);
                 clientStmt.executeUpdate();
             }

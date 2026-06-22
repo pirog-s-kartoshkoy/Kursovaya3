@@ -62,9 +62,9 @@
                                         <TableColumn fx:id="tripPriceColumn" prefWidth="130.0" text="цена" />
                                     </columns>
                                 </TableView>
-                        <Button fx:id="onAddTripClick" layoutX="8.0" layoutY="645.0" mnemonicParsing="false" onAction="#TripClick" prefHeight="25.0" prefWidth="75.0" text="Добавить" />
-                        <Button layoutX="865.0" layoutY="645.0" mnemonicParsing="false" onAction="#onDeleteTripClick" prefHeight="25.0" prefWidth="118.0" text="Удалить" />
-                        <Button layoutX="693.0" layoutY="645.0" mnemonicParsing="false" onAction="#onAddFineClick" prefHeight="25.0" prefWidth="155.0" text="Начислить штраф" />
+                        <Button fx:id="TripClick" layoutX="8.0" layoutY="645.0" mnemonicParsing="false" onAction="#TripClick" prefHeight="25.0" prefWidth="75.0" text="Добавить" />
+                        <Button fx:id="deleteTripClick" layoutX="865.0" layoutY="645.0" mnemonicParsing="false" onAction="#onDeleteTripClick" prefHeight="25.0" prefWidth="118.0" text="Удалить" />
+                        <Button fx:id="addFineTripClick" layoutX="693.0" layoutY="645.0" mnemonicParsing="false" onAction="#onAddFineClick" prefHeight="25.0" prefWidth="155.0" text="Начислить штраф" />
                             </children>
                         </AnchorPane>
                     </content>

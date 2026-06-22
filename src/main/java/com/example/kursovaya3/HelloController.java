@@ -56,6 +56,7 @@ public class HelloController {
                     int idFromDb = resultSet.getInt("id_user");
                     String roleFromDb = resultSet.getString("role");
 
+                    // Записываем данные в глобальную сессию
                     UserSession.startSession(idFromDb, login);
 
                     return roleFromDb;
